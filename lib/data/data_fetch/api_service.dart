@@ -3,21 +3,23 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../model/chats.dart';
+import '../model/user.dart';
 
 class ApiService {
-  getChatRooms(String userID) async {
-    print("getChatRooms called for $userID");
+  getChatRooms(String userID) async* {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final querySnapshot = await firestore
+    final querySnapshot = firestore
         .collection("chats")
         .where("users.$userID", isEqualTo: true)
-        .get();
+        .snapshots();
     //{users: {hello: true, shashi: true}}
-    return querySnapshot.docs.map((doc) => doc.data()).toList();
+    yield querySnapshot;
   }
 
-  getChatRoomID(String user1, String user2) async {
+  Future getChatRoomID(String user1, String user2) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
+    print(user1);
+    print(user2);
     final data = await firestore
         .collection('chats')
         .where('users.$user1', isEqualTo: true)
@@ -70,6 +72,17 @@ class ApiService {
         .collection('messages')
         .add(message.toJson())
         .then((value) => print("message sent successfully $value"));
+  }
+
+  createUser(User newUser) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    firestore.collection('users').doc(newUser.id).set(newUser.toJson());
+  }
+
+  getUserModel(String userID) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final data = await firestore.collection('users').doc(userID).get();
+    return User.fromJson(data.data()!);
   }
 
   const ApiService();

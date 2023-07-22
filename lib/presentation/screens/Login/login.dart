@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../auth/google_sign_in.dart';
+
 import '../home/home_page.dart';
 
 class Login extends StatelessWidget {
@@ -18,7 +19,9 @@ class Login extends StatelessWidget {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const HomePage(),
+                    builder: (context) {
+                      return const HomePage();
+                    },
                   ),
                 );
               }

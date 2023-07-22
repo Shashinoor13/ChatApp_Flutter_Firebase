@@ -22,6 +22,10 @@ class ChatPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(currentUserModel.id);
+    print(messageUserModel.id);
+    // final String chatRoomID = const ApiService()
+    //     .getChatRoomID(currentUserModel.id, messageUserModel.id);
     bool isReplied = false;
     final visible = Visible();
     final messageController = TextEditingController();
@@ -172,7 +176,8 @@ class ChatPage extends StatelessWidget {
             Expanded(
               child: StreamBuilder(
                 stream: ChatRepository(apiService: const ApiService())
-                    .getChatRoomMessages(),
+                    .getChatRoomMessages(
+                        currentUserModel.id, messageUserModel.id),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     return ListView.builder(
