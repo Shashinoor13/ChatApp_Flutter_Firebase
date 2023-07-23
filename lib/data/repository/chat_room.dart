@@ -11,7 +11,6 @@ class ChatRepository {
   Stream getChatRooms(String userID) async* {
     try {
       final chatRooms = await apiService.getChatRooms(userID);
-      print(chatRooms);
       yield* chatRooms;
     } catch (e) {
       DataError(e.toString());

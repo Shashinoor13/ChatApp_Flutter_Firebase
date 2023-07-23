@@ -7,23 +7,23 @@ import 'package:clipboard/clipboard.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../../../data/model/user.dart';
-
 class ChatPage extends StatelessWidget {
   final String chatRoomID;
-  final User currentUserModel;
-  final User messageUserModel;
+  final String currentUserModel;
+  final String messageUserModel;
+  final String senderImage;
+  final String name;
   const ChatPage({
     super.key,
     required this.chatRoomID,
     required this.currentUserModel,
     required this.messageUserModel,
+    required this.senderImage,
+    required this.name,
   });
 
   @override
   Widget build(BuildContext context) {
-    print(currentUserModel.id);
-    print(messageUserModel.id);
     // final String chatRoomID = const ApiService()
     //     .getChatRoomID(currentUserModel.id, messageUserModel.id);
     bool isReplied = false;
@@ -40,97 +40,101 @@ class ChatPage extends StatelessWidget {
           },
           icon: const Icon(CupertinoIcons.back),
         ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              CupertinoIcons.phone,
-              size: 25,
-            ),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              CupertinoIcons.video_camera,
-              size: 30,
-            ),
-          ),
-          IconButton(
-            onPressed: () {
-              showCupertinoModalPopup(
-                  context: context,
-                  builder: (context) {
-                    return CupertinoActionSheet(
-                      actions: [
-                        CupertinoActionSheetAction(
-                          onPressed: () {},
-                          child: const Text('View Contact'),
-                        ),
-                        CupertinoActionSheetAction(
-                          onPressed: () {
-                            visible.changeVisibility(true);
-                            Navigator.pop(context);
-                          },
-                          child: const Text('Search'),
-                        ),
-                        CupertinoActionSheetAction(
-                          onPressed: () {},
-                          child: const Text('Mute Notifications'),
-                        ),
-                        CupertinoActionSheetAction(
-                          onPressed: () {},
-                          child: const Text(
-                            'Block',
-                            style: TextStyle(color: Colors.red),
-                          ),
-                        ),
-                      ],
-                      cancelButton: CupertinoActionSheetAction(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: const Text('Cancel'),
-                      ),
-                    );
-                  });
-            },
-            icon: const Icon(CupertinoIcons.ellipsis_vertical),
-          ),
-        ],
         elevation: 0,
         title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Stack(
+            Row(
               children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundImage: NetworkImage(messageUserModel.avatarUrl),
+                Stack(
+                  children: [
+                    StreamBuilder(
+                        stream:
+                            const ApiService().getUserModel(messageUserModel),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const CupertinoActivityIndicator();
+                          }
+                          if (snapshot.hasData) {
+                            return Hero(
+                              tag: senderImage,
+                              child: CircleAvatar(
+                                maxRadius: 20,
+                                backgroundImage: NetworkImage(senderImage),
+                              ),
+                            );
+                          }
+                          return const CupertinoActivityIndicator();
+                        }),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        height: 15,
+                        width: 15,
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                      ),
+                    )
+                  ],
                 ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    height: 15,
-                    width: 15,
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                  ),
-                )
+                const SizedBox(
+                  width: 10,
+                ),
+                Text(
+                  name,
+                  style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w300,
+                      overflow: TextOverflow.ellipsis),
+                ),
               ],
             ),
-            const SizedBox(
-              width: 10,
-            ),
-            Text(
-              messageUserModel.name,
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 20,
-                fontWeight: FontWeight.w500,
-              ),
+            IconButton(
+              onPressed: () {
+                showCupertinoModalPopup(
+                    context: context,
+                    builder: (context) {
+                      return CupertinoActionSheet(
+                        actions: [
+                          CupertinoActionSheetAction(
+                            onPressed: () {},
+                            child: const Text('View Contact'),
+                          ),
+                          CupertinoActionSheetAction(
+                            onPressed: () {
+                              visible.changeVisibility(true);
+                              Navigator.pop(context);
+                            },
+                            child: const Text('Search'),
+                          ),
+                          CupertinoActionSheetAction(
+                            onPressed: () {},
+                            child: const Text('Mute Notifications'),
+                          ),
+                          CupertinoActionSheetAction(
+                            onPressed: () {},
+                            child: const Text(
+                              'Block',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                        cancelButton: CupertinoActionSheetAction(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text('Cancel'),
+                        ),
+                      );
+                    });
+              },
+              icon: const Icon(CupertinoIcons.ellipsis_vertical),
             ),
           ],
         ),
@@ -176,8 +180,7 @@ class ChatPage extends StatelessWidget {
             Expanded(
               child: StreamBuilder(
                 stream: ChatRepository(apiService: const ApiService())
-                    .getChatRoomMessages(
-                        currentUserModel.id, messageUserModel.id),
+                    .getChatRoomMessages(currentUserModel, messageUserModel),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     return ListView.builder(
@@ -217,7 +220,10 @@ class ChatPage extends StatelessWidget {
                                                     chatRoomID, data.id);
                                             Navigator.pop(context);
                                           },
-                                          child: const Text('Delete'),
+                                          child: const Text(
+                                            'Delete',
+                                            style: TextStyle(color: Colors.red),
+                                          ),
                                         ),
                                         CupertinoActionSheetAction(
                                           onPressed: () {
@@ -257,18 +263,20 @@ class ChatPage extends StatelessWidget {
                               margin: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 5),
                               child: Row(
-                                mainAxisAlignment: data['sender'] == 'shashi'
-                                    ? MainAxisAlignment.end
-                                    : MainAxisAlignment.start,
+                                mainAxisAlignment:
+                                    data['sender'] == currentUserModel
+                                        ? MainAxisAlignment.end
+                                        : MainAxisAlignment.start,
                                 children: [
                                   InkWell(
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 10, vertical: 10),
                                       decoration: BoxDecoration(
-                                        color: data['sender'] == 'shashi'
-                                            ? Colors.blue
-                                            : Colors.grey,
+                                        color:
+                                            data['sender'] == currentUserModel
+                                                ? Colors.blue
+                                                : Colors.grey,
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: Text(
@@ -305,7 +313,7 @@ class ChatPage extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: Container(
+                    child: SizedBox(
                       height: 50,
                       width: double.infinity,
                       child: CupertinoTextField(
@@ -322,7 +330,7 @@ class ChatPage extends StatelessWidget {
                   IconButton(
                     onPressed: () {
                       Chats message = Chats(
-                        sender: 'shashi',
+                        sender: currentUserModel,
                         message: messageController.text,
                         time: DateTime.now(),
                         isReplied: isReplied, //TODO:Implement Later

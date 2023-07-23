@@ -1,29 +1,29 @@
 import 'package:equatable/equatable.dart';
 
 class ChatRoom extends Equatable {
-  final String chatRoomId;
-  final List<String> users;
-  final String lastMessage;
+  final String name;
+  final Map<String, bool> users;
+  final String avatarUrl;
 
-  const ChatRoom(this.chatRoomId, this.users, this.lastMessage);
+  const ChatRoom(
+      {required this.name, required this.users, required this.avatarUrl});
 
   factory ChatRoom.fromJson(Map<String, dynamic> json) {
     return ChatRoom(
-      json['chatRoomId'],
-      json['users'],
-      json['lastMessage'],
+      name: json['name'],
+      users: json['users'],
+      avatarUrl: json['avatarUrl'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'chatRoomId': chatRoomId,
+      'name': name,
       'users': users,
-      'lastMessage': lastMessage,
+      'avatarUrl': avatarUrl,
     };
   }
 
   @override
-  // TODO: implement props
-  List<Object?> get props => [chatRoomId, users, lastMessage];
+  List<Object?> get props => [name, users, avatarUrl];
 }

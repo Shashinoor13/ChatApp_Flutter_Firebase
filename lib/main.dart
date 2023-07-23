@@ -1,4 +1,5 @@
-import 'package:chats/presentation/screens/Login/login.dart';
+import 'package:chats/config/routes/routes.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 
@@ -10,7 +11,14 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  final user = FirebaseAuth.instance.currentUser!.uid;
+  if (user.isNotEmpty) {
+    //Navigate to the home page directly
+    runApp(const MyApp());
+  } else {
+    //Navigate to the login page
+    runApp(const LoginPageLoad());
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -20,13 +28,29 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      onGenerateRoute: AppRoutes.onGenerateRoutes,
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const Login(),
+      initialRoute: "/",
+      // home: const HomePage(),
+    );
+  }
+}
+
+class LoginPageLoad extends StatelessWidget {
+  const LoginPageLoad({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)),
+      // home: const Login(),
+      initialRoute: "/login",
     );
   }
 }
